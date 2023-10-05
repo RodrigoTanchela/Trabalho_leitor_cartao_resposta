@@ -1,7 +1,12 @@
 import PySimpleGUI as sg
 
-class TelaConfiguracao:
-    def __init__(self):
+class TelaLeitorCartao:
+    def __init__(self, controlador):
+        self.controlador = controlador
+
+        layoutBuscarArquivo = [
+            [sg.Text('Caminho',size=(7,0)),sg.Input(size=(51,8), key='arquivo'), sg.Button('Buscar', key='buscar')]
+        ]
 
         layoutNumeroPerguntas = [
             [sg.Text('Perguntas:',size=(7)), sg.Input(size=(7,0), pad=((0, 200), (0, 0)), key='numeroperguntas'), 
@@ -24,13 +29,17 @@ class TelaConfiguracao:
             sg.Text('Respostas:',size=(7,0),), sg.Input(size=(7,0),  key='numeroopcoes')] 
         ]
 
+        layoutBotoes = [
+            [sg.Button('Preview'), sg.Button('Gerar planilha')]
+        ]
+
         layout = [
-            [sg.Text('Buscar Arquivo',size=(7,0)),sg.Input(size=(51,8), key='caminho')],
+            [sg.Frame('', layoutBuscarArquivo, border_width=2, size=(500, 50))],
             [sg.Frame('Número', layoutNumeroPerguntas, border_width=2, size=(500, 50))],
             [sg.Frame('Espaçamento Marcador', layoutEspacamentoMarcador, border_width=2, size=(500, 50))],
             [sg.Frame('Espaçamento Respostas', layoutEspacamentoPerguntas, border_width=2, size=(500, 50))],
             [sg.Frame('Marcadores Respostas', layoutTipoMarcadores, border_width=2, size=(500, 50))],            
-            [sg.Button('Salvar os dados')],
+            [sg.Frame('', layoutBotoes, border_width=2, size=(500, 50))],
             # [sg.Output(size=(30,20))]
         ]
 
@@ -38,8 +47,20 @@ class TelaConfiguracao:
         self.janela = sg.Window("Dados do Usuário").layout(layout)
         # Extrair os dados da tela
         self.button, self.values = self.janela.Read()
-    def Iniciar(self):
-       print(self.values)
+    
+    def atualizar_label(self, texto):
+        self.janela['arquivo'].update(texto)
 
-tela = TelaConfiguracao()
-tela.Iniciar()
+    # def Iniciar(self):
+    #    print(self.values)
+    def Iniciar(self):
+        while True:
+            evento, valores = self.janela.read()
+            if evento == sg.WINDOW_CLOSED:
+                break
+            elif evento == 'buscar':
+                arquivo_selecionado = sg.popup_get_file("Selecione um arquivo")
+                if arquivo_selecionado:
+                    self.controlador.abrir_explorador_de_arquivos(arquivo_selecionado)
+
+
