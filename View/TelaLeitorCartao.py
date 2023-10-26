@@ -1,6 +1,13 @@
 import PySimpleGUI as sg
 import sys
-sys.path.append(r'C:\Users\Rodrigo\Documents\TrabalhoPin3\ProjetoPin3\View\Formulario')
+import cv2
+
+print("Versão do OpenCV:", cv2.__version__)
+
+
+from ProjetoPin3.View.Formulario import Formulario
+
+# sys.path.append(r'C:\Users\Rodrigo\Documents\TrabalhoPin3\ProjetoPin3\View\Formulario')
 
 class TelaLeitorCartao:
     def __init__(self, controlador):
@@ -16,19 +23,18 @@ class TelaLeitorCartao:
         ]
 
         layoutEspacamentoMarcador = [
-            [sg.Text('Largura:', size=(7)), sg.Input(size=(7, 0), pad=((0, 200), (0, 0)), key='numeroperguntas'),
-             sg.Text('Altura:', size=(7, 0), ), sg.Input(size=(7, 0), key='numeroopcoes')]
+            [sg.Text('Largura:', size=(7)), sg.Input(size=(7, 0), pad=((0, 200), (0, 0)), key='larguraMarcador'),
+             sg.Text('Altura:', size=(7, 0), ), sg.Input(size=(7, 0), key='AlturaMarcador')]
         ]
 
         layoutEspacamentoPerguntas = [
-            [sg.Text('Perguntas:', size=(7)), sg.Input(size=(7, 0), pad=((0, 200), (0, 0)), key='numeroperguntas'),
-             sg.Text('Respostas:', size=(7, 0), ), sg.Input(size=(7, 0), key='numeroopcoes')]
+            [sg.Text('Perguntas:', size=(7)), sg.Input(size=(7, 0), pad=((0, 200), (0, 0)), key='espacamentoPerguntas'),
+             sg.Text('Respostas:', size=(7, 0), ), sg.Input(size=(7, 0), key='espacamentoResposta')]
         ]
 
-        layoutTipoMarcadores = [
-            [sg.Text('Folha de respostas:', size=(15)), sg.Input(size=(7, 0), key='numeroperguntas'),
-             sg.Text('Perguntas:', size=(7, 0), ), sg.Input(size=(7, 0), key='numeroopcoes'),
-             sg.Text('Respostas:', size=(7, 0), ), sg.Input(size=(7, 0), key='numeroopcoes')]
+        loyuotMarginPagina = [
+            [sg.Text('Superior:', size=(7)), sg.Input(size=(7, 0), pad=((0, 200), (0, 0)), key='margemSuperior'),
+             sg.Text('Lateral:', size=(7, 0), ), sg.Input(size=(7, 0), key='margemLateral')]
         ]
 
         layoutBotoes = [
@@ -38,9 +44,9 @@ class TelaLeitorCartao:
         layout = [
             [sg.Frame('', layoutBuscarArquivo, border_width=2, size=(500, 50))],
             [sg.Frame('Número', layoutNumeroPerguntas, border_width=2, size=(500, 50))],
-            [sg.Frame('Espaçamento Marcador', layoutEspacamentoMarcador, border_width=2, size=(500, 50))],
-            [sg.Frame('Espaçamento Respostas', layoutEspacamentoPerguntas, border_width=2, size=(500, 50))],
-            [sg.Frame('Marcadores Respostas', layoutTipoMarcadores, border_width=2, size=(500, 50))],
+            [sg.Frame('Medidas do campo', layoutEspacamentoMarcador, border_width=2, size=(500, 50))],
+            [sg.Frame('Espaçamento', layoutEspacamentoPerguntas, border_width=2, size=(500, 50))],
+            [sg.Frame('Margem', loyuotMarginPagina, border_width=2, size=(500, 50))],
             [sg.Frame('', layoutBotoes, border_width=2, size=(500, 50))],
             # [sg.Output(size=(30,20))]
         ]
@@ -65,9 +71,10 @@ class TelaLeitorCartao:
                 if arquivo_selecionado:
                     self.controlador.abrir_explorador_de_arquivos(arquivo_selecionado)
             elif evento == 'Preview':
+                pass
                 # Abra a classe Formulario
                 formulario = Formulario()
-                formulario.preencher_formulario("Nome do usuário", "Email do usuário")
+                formulario.preencher_formulario("Nome do usuáriodasd", "Email do usuáriasdao")
                 formulario.gerar_pdf("arquivo.pdf")
 
 

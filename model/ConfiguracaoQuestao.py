@@ -1,4 +1,4 @@
-import Configuracoes
+from ProjetoPin3.model.Configuracoes import Configuracoes
 
-class ConfiguracoesQuestoes(Configuracoes):
+class ConfiguracaoQuestao(Configuracoes):
     pass

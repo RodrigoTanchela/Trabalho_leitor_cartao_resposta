@@ -1,4 +1,4 @@
-class geracaoPlanilha:
+class GeracaoPlanilha:
     def __init__(self):
         self.name = ""
         self.email = ""

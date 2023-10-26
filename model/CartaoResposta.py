@@ -1,4 +1,4 @@
-class CartaoRespota:
+class CartaoResposta:
     
     def __init__(self, identificador, aluno, questao) :
         self._identificador = identificador
