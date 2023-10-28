@@ -1,13 +1,9 @@
 import PySimpleGUI as sg
-import sys
 import cv2
-
-print("Versão do OpenCV:", cv2.__version__)
-
-
-from ProjetoPin3.View.Formulario import Formulario
-
-# sys.path.append(r'C:\Users\Rodrigo\Documents\TrabalhoPin3\ProjetoPin3\View\Formulario')
+import fitz
+from io import BytesIO
+from PIL import Image
+import numpy as np
 
 class TelaLeitorCartao:
     def __init__(self, controlador):
@@ -59,8 +55,44 @@ class TelaLeitorCartao:
     def atualizar_label(self, texto):
         self.janela['arquivo'].update(texto)
 
-    # def Iniciar(self):
-    #    print(self.values)
+    def extraindoImagem(self):
+        pdf_document = fitz.open(self.janela['arquivo'].get())
+        page = pdf_document[0]  # Acesse a primeira página ou a página desejada
+
+        # Renderize a página como uma imagem usando PyMuPDF (Fitz)
+        pix = page.get_pixmap(matrix=fitz.Matrix(72 / 72, 72 / 72))  # Ajuste a resolução conforme necessário
+
+        # Use Pillow para converter a imagem PyMuPDF em um formato compatível com PySimpleGUI
+        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+
+        # Converta a imagem Pillow em bytes para exibição no PySimpleGUI
+        img_byte_array = BytesIO()
+        img.save(img_byte_array, format="PNG")
+        img_bytes = img_byte_array.getvalue()
+        return img
+
+    def identificandoPontos(self):
+        imagem = self.extraindoImagem()
+
+        params = cv2.SimpleBlobDetector_Params()
+        params.filterByColor = True
+        params.blobColor = 0
+        params.filterByArea = True
+        params.minRepeatability = 10
+        # params.minArea = 300
+        params.maxArea = 350
+
+        img_cinza = cv2.cvtColor(np.array(imagem), cv2.COLOR_BGR2GRAY)
+
+        detector = cv2.SimpleBlobDetector_create(params)
+        keypoints = detector.detect(img_cinza)
+
+        imagem_com_keypoints = cv2.drawKeypoints(img_cinza, keypoints, None)
+
+        cv2.imshow("Imagem com Keypoints", imagem_com_keypoints)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
     def Iniciar(self):
         while True:
             evento, valores = self.janela.read()
@@ -71,10 +103,9 @@ class TelaLeitorCartao:
                 if arquivo_selecionado:
                     self.controlador.abrir_explorador_de_arquivos(arquivo_selecionado)
             elif evento == 'Preview':
-                pass
-                # Abra a classe Formulario
-                formulario = Formulario()
-                formulario.preencher_formulario("Nome do usuáriodasd", "Email do usuáriasdao")
-                formulario.gerar_pdf("arquivo.pdf")
-
+                self.identificandoPontos()
+                # # Abra a classe Formulario
+                # formulario = Formulario()
+                # formulario.preencher_formulario("Nome do usuáriodasd", "Email do usuáriasdao")
+                # formulario.gerar_pdf("arquivo.pdf")
 
