@@ -14,8 +14,8 @@ class TelaLeitorCartao:
         ]
 
         layoutNumeroPerguntas = [
-            [sg.Text('Perguntas:', size=(7)), sg.Input(size=(7, 0), pad=((0, 200), (0, 0)), key='numeroperguntas'),
-             sg.Text('Opções:', size=(7, 0), ), sg.Input(size=(7, 0), key='numeroopcoes')]
+            [sg.Text('Perguntas:', size=(7)), sg.Input(size=(7, 0), pad=((0, 200), (0, 0)), key='numeroPerguntas'),
+             sg.Text('Opções:', size=(7, 0), ), sg.Input(size=(7, 0), key='numeroOpcoes')]
         ]
 
         layoutEspacamentoMarcador = [
@@ -78,7 +78,7 @@ class TelaLeitorCartao:
         params.filterByColor = True
         params.blobColor = 0
         params.filterByArea = True
-        params.minRepeatability = 10
+        params.minRepeatability = 12
         # params.minArea = 300
         params.maxArea = 350
 
@@ -89,11 +89,82 @@ class TelaLeitorCartao:
 
         imagem_com_keypoints = cv2.drawKeypoints(img_cinza, keypoints, None)
 
-        cv2.imshow("Imagem com Keypoints", imagem_com_keypoints)
+        # cv2.imshow("Imagem com Keypoints", imagem_com_keypoints)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+        self.construcaoFormularioRetangular(keypoints, img_cinza)
+
+    def construcaoFormularioCircular(self, keypoints, image):
+        indice = 2
+        keypoint = keypoints[indice]
+        x = keypoint.pt[0]
+        y = keypoint.pt[1]
+        # Especifica o centro e o raio do círculo
+        center = (int(x+float(self.values['margemSuperior'])), int(y+float(self.values['margemLateral'])))
+        radius = 4
+        color = (0, 0, 255)
+        thickness = 2
+
+        # Desenhe o círculo na imagem
+        cv2.circle(image, center, radius, color, thickness)
+
+        # Exiba a imagem
+        cv2.imshow('Círculo', image)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
+    def construcaoFormularioRetangular(self, keypoints, image):
+        self.atualizar_interface()
+        indice = 2
+        keypoint = keypoints[indice]
+        x = int(keypoint.pt[0])
+        y = int(keypoint.pt[1])
+
+        # Tamanho dos retângulos
+        retangulo_width = int(self.values['larguraMarcador'])
+        retangulo_height = int(self.values['AlturaMarcador'])
+
+
+        distancia_horizontal = int(self.values['espacamentoResposta'])
+        distancia_vertical = int(self.values['espacamentoPerguntas'])
+
+        # Posição inicial a partir da qual começar a desenhar
+        start_x = int(x+float(self.values['margemSuperior']))
+        #start_y = int(y+float(self.values['margemLateral']))
+
+        # Cor dos retângulos (em BGR)
+        color = (0, 255, 0)  # Verde
+
+        # Espessura da linha do retângulo (pode ser -1 para preencher os retângulos)
+        thickness = 1
+        linhas_limite = int(self.values['numeroPerguntas'])
+        linha_atual = 1
+        retangulos_desenhados = 0
+        retangulos_por_linha = int(self.values['numeroOpcoes'])
+
+        # Desenhe os retângulos na imagem com a posição inicial
+        x = start_x
+        for _ in range(linhas_limite):
+            for _ in range(retangulos_por_linha):
+                x1, y1 = x, y
+                x2, y2 = x + retangulo_width, y + retangulo_height
+                cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness)
+                x += retangulo_width + distancia_horizontal
+
+            # Mover para a próxima linha
+            x = start_x
+            y += retangulo_height + distancia_vertical
+
+        cv2.imshow('Retângulos', image)
+
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+
     def Iniciar(self):
+        self.eventListner()
+
+    def eventListner(self):
         while True:
             evento, valores = self.janela.read()
             if evento == sg.WINDOW_CLOSED:
@@ -104,8 +175,4 @@ class TelaLeitorCartao:
                     self.controlador.abrir_explorador_de_arquivos(arquivo_selecionado)
             elif evento == 'Preview':
                 self.identificandoPontos()
-                # # Abra a classe Formulario
-                # formulario = Formulario()
-                # formulario.preencher_formulario("Nome do usuáriodasd", "Email do usuáriasdao")
-                # formulario.gerar_pdf("arquivo.pdf")
 
