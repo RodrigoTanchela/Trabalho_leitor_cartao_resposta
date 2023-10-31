@@ -5,9 +5,8 @@ from controller.ControladorLeitorCartao import ControladorLeitorCartao
 controlador = ControladorLeitorCartao()
 
 # Crie uma instância da tela e associe o controlador a ela
-tela = TelaLeitorCartao(controlador)
-controlador.visao = tela
-
+telaLeitorCartaoResposta = TelaLeitorCartao(controlador)
+controlador.visaoLeitorCartaoResposta = telaLeitorCartaoResposta
 
 # Inicie o loop de eventos da interface gráfica
-tela.Iniciar()
+telaLeitorCartaoResposta.Iniciar()
