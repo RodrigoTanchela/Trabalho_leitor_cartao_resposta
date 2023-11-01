@@ -21,7 +21,7 @@ class TelaLeitorCartao:
 
         layoutEspacamentoMarcador = [
             [sg.Text('Largura:', size=(7)), sg.Input(size=(7, 0), pad=((0, 200), (0, 0)), key='larguraMarcador'),
-             sg.Text('Altura:', size=(7, 0), ), sg.Input(size=(7, 0), key='AlturaMarcador')]
+             sg.Text('Altura:', size=(7, 0), ), sg.Input(size=(7, 0), key='alturaMarcador')]
         ]
 
         layoutEspacamentoPerguntas = [
@@ -106,7 +106,7 @@ class TelaLeitorCartao:
         # Tamanho dos retângulos
         print(self.janela['larguraMarcador'].get())
         retangulo_width = int(self.janela['larguraMarcador'].get())
-        retangulo_height = int(self.janela['AlturaMarcador'].get())
+        retangulo_height = int(self.janela['alturaMarcador'].get())
 
         distancia_horizontal = int(self.janela['espacamentoResposta'].get())
         distancia_vertical = int(self.janela['espacamentoPerguntas'].get())
@@ -149,42 +149,39 @@ class TelaLeitorCartao:
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-    def leituraRespostas(self, imagem_cinza, imagem_cartao):
-        # Aplicar uma limiarização para binarizar a imagem
-        _, imagem_binarizada = cv2.threshold(imagem_cinza, 128, 255, cv2.THRESH_BINARY)
-
-        # Encontrar contornos na imagem binarizada
-        contornos, _ = cv2.findContours(imagem_binarizada, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-        # Definir uma lista para armazenar as marcações preenchidas
-        marcacoes_preenchidas = []
-
-        # Iterar sobre os contornos
-        for contorno in contornos:
-            # Calcular a área do contorno
-            area = cv2.contourArea(contorno)
-
-            # Se a área do contorno for maior que um limite (marcação preenchida), adicione à lista
-            if area > 100:  # Ajuste este limite de acordo com suas necessidades
-                marcacoes_preenchidas.append(contorno)
-
-        # Desenhe os contornos das marcações preenchidas na imagem original
-        cv2.drawContours(imagem_cartao, marcacoes_preenchidas, -1, (0, 0, 255), 2)
-
-        # Exibir a imagem com as marcações destacadas
-        cv2.imshow('Cartão de Respostas', imagem_cartao)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-
-        # Agora você pode processar as marcações preenchidas (por exemplo, contando o número de marcações).
-        print(f"Número de marcações preenchidas: {len(marcacoes_preenchidas)}")
-
     def Iniciar(self):
         self.eventListner()
 
     def abrirTelaImportacaoCartaoResposta(self):
         telaGeracaoCartaoResposta = TelaGeracaoCartaoResposta(self.controlador)
         self.telaGeracaoCartaoResposta.setVisible()
+
+    def getDadosTela(self):
+        numeroPerguntas = int(self.janela['numeroPerguntas'].get())
+        numeroOpcoes = int(self.janela['numeroOpcoes'].get())
+        margemLateral = float(self.janela['margemLateral'].get())
+        margemSuperior = float(self.janela['margemSuperior'].get())
+        larguraMarcador = int(self.janela['larguraMarcador'].get())
+        alturaMarcador = int(self.janela['alturaMarcador'].get())
+        espacamentoPerguntas = int(self.janela['espacamentoPerguntas'].get())
+        espacamentoResposta = int(self.janela['espacamentoResposta'].get())
+        qtdAlunos = int(self.janela['qtdAlunos'].get())
+        return {
+            'numeroPerguntas': numeroPerguntas,
+            'numeroOpcoes': numeroOpcoes,
+            'margemLateral': margemLateral,
+            'margemSuperior': margemSuperior,
+            'larguraMarcador': larguraMarcador,
+            'alturaMarcador': alturaMarcador,
+            'espacamentoPerguntas': espacamentoPerguntas,
+            'espacamentoResposta': espacamentoResposta,
+            'qtdAlunos': qtdAlunos
+        }
+
+
+    def definiConfiguracaoLeitura(self):
+        dados_tela = self.getDadosTela()
+        self.controlador.definirConfiguracao(dados_tela)
 
     def eventListner(self):
         while True:
@@ -200,5 +197,5 @@ class TelaLeitorCartao:
             elif evento == 'Importar cartao resposta':
                 self.controlador.actionImportacao()
             elif evento == 'Definir Configuracao':
-                self.controlador.actionImportacao()
+                self.definiConfiguracaoLeitura()
 

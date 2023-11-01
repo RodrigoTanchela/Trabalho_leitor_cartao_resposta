@@ -29,8 +29,20 @@ class ControladorLeitorCartao:
     def importar_cartao_resposta(self,  arquivo_selecionado):
         self.visaoGeracaoCartaoResposta.atualizar_label(arquivo_selecionado)
 
-    def definirConfiguracao(self):
-        pass
+    def definirConfiguracao(self, configuracao):
+        numeroPerguntas = configuracao['numeroPerguntas']
+        numeroOpcoes = configuracao['numeroOpcoes']
+        margemLateral = configuracao['margemLateral']
+        margemSuperior = configuracao['margemSuperior']
+        larguraMarcador = configuracao['larguraMarcador']
+        alturaMarcador = configuracao['alturaMarcador']
+        espacamentoPerguntas = configuracao['espacamentoPerguntas']
+        espacamentoResposta = configuracao['espacamentoResposta']
+        qtdAlunos = configuracao['qtdAlunos']
+
+        self.configuracaoQuestao = ConfiguracaoQuestao(numeroPerguntas, espacamentoPerguntas, margemSuperior, margemLateral, qtdAlunos)
+        self.configuracaoResposta = ConfiguracaoQuestao(numeroOpcoes, espacamentoResposta, larguraMarcador, alturaMarcador)
+
 
     def actionImportacao(self):
         self.visaoLeitorCartaoResposta.abrirTelaImportacaoCartaoResposta()
