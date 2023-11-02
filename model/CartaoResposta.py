@@ -4,7 +4,8 @@ class CartaoResposta:
         self._identificador = identificador
         self._aluno = aluno
         self._questao = questao
-    
+
+
     def get_identificador(self):
         return self._identificador
 

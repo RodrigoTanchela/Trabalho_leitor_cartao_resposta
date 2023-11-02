@@ -1,7 +1,7 @@
 from ProjetoPin3.model.Configuracoes import Configuracoes
 
 class ConfiguracaoQuestao(Configuracoes):
-    def __init__(self, espacamento, numero, margemSuperior, margemLateral, qtdAlunos):
+    def __init__(self, espacamento, numero, margemSuperior, margemLateral, qtdAlunos, posicaoHorizontal, posicaoVertical):
         super().__init__(espacamento, numero)
         self._margemSuperior = margemSuperior
         self._margemLateral = margemLateral

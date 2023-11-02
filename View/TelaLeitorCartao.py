@@ -4,11 +4,12 @@ import fitz
 from io import BytesIO
 from PIL import Image
 import numpy as np
-from ProjetoPin3.View.TelaGeracaoCartaoResposta import TelaGeracaoCartaoResposta
+
 
 class TelaLeitorCartao:
     def __init__(self, controlador):
         self.controlador = controlador
+        self.telaGeracaoCartaoResposta = None
 
         layoutBuscarArquivo = [
             [sg.Text('Caminho', size=(7, 0)), sg.Input(size=(51, 8), key='arquivo'), sg.Button('Buscar', key='buscar')]
@@ -62,6 +63,7 @@ class TelaLeitorCartao:
 
     def extraindoImagem(self):
         pdf_document = fitz.open(self.janela['arquivo'].get())
+
         page = pdf_document[0]
 
         pix = page.get_pixmap(matrix=fitz.Matrix(100 / 100, 100 / 100))
@@ -70,7 +72,6 @@ class TelaLeitorCartao:
 
         img_byte_array = BytesIO()
         img.save(img_byte_array, format="PNG")
-        #img_bytes = img_byte_array.getvalue()
         return img
 
     def identificandoPontos(self, imagem):
@@ -104,7 +105,6 @@ class TelaLeitorCartao:
         y = int(keypoint.pt[1])
 
         # Tamanho dos retângulos
-        print(self.janela['larguraMarcador'].get())
         retangulo_width = int(self.janela['larguraMarcador'].get())
         retangulo_height = int(self.janela['alturaMarcador'].get())
 
@@ -153,8 +153,7 @@ class TelaLeitorCartao:
         self.eventListner()
 
     def abrirTelaImportacaoCartaoResposta(self):
-        telaGeracaoCartaoResposta = TelaGeracaoCartaoResposta(self.controlador)
-        self.telaGeracaoCartaoResposta.setVisible()
+        pass
 
     def getDadosTela(self):
         numeroPerguntas = int(self.janela['numeroPerguntas'].get())
@@ -166,6 +165,8 @@ class TelaLeitorCartao:
         espacamentoPerguntas = int(self.janela['espacamentoPerguntas'].get())
         espacamentoResposta = int(self.janela['espacamentoResposta'].get())
         qtdAlunos = int(self.janela['qtdAlunos'].get())
+        imagem = self.extraindoImagem()
+        keypoints, img_cinza = self.identificandoPontos(imagem)
         return {
             'numeroPerguntas': numeroPerguntas,
             'numeroOpcoes': numeroOpcoes,
@@ -175,7 +176,10 @@ class TelaLeitorCartao:
             'alturaMarcador': alturaMarcador,
             'espacamentoPerguntas': espacamentoPerguntas,
             'espacamentoResposta': espacamentoResposta,
-            'qtdAlunos': qtdAlunos
+            'qtdAlunos': qtdAlunos,
+            'imagem': imagem,
+            'keypoints': keypoints,
+            'img_cinza': img_cinza
         }
 
 
