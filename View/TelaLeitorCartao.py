@@ -58,99 +58,56 @@ class TelaLeitorCartao:
         self.janela = sg.Window("Dados do Usuário").layout(layout)
         self.button, self.values = self.janela.Read()
 
-    def atualizar_label(self, texto):
-        self.janela['arquivo'].update(texto)
+    def Iniciar(self):
+        self.eventListner()
 
-    def extraindoImagem(self):
-        pdf_document = fitz.open(self.janela['arquivo'].get())
+    def getCaminho(self):
+        return self.janela['arquivo'].get()
 
+    def getLarguraMarcador(self):
+        return int(self.janela['larguraMarcador'].get())
+
+    def getAlturaMarcador(self):
+        return int(self.janela['alturaMarcador'].get())
+
+    def getEspacamentoResposta(self):
+        return int(self.janela['espacamentoResposta'].get())
+
+    def getEspacamentoPergunta(self):
+        return int(self.janela['espacamentoPerguntas'].get())
+
+    def getMargemLateral(self):
+        return int(self.janela['margemLateral'].get())
+
+    def getMargemSuperior(self):
+        return int(self.janela['margemSuperior'].get())
+
+    def getNumeroOpcoes(self):
+        return int(self.janela['numeroOpcoes'].get())
+
+    def getNumeroPerguntas(self):
+        return int(self.janela['numeroPerguntas'].get())
+
+    def getQuantidadeAlunos(self):
+        return int(self.janela['qtdAlunos'].get())
+
+    def getImage(self):
+        pdf_document = fitz.open(self.getCaminho())
         page = pdf_document[0]
-
         pix = page.get_pixmap(matrix=fitz.Matrix(100 / 100, 100 / 100))
-
         img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-
         img_byte_array = BytesIO()
         img.save(img_byte_array, format="PNG")
         return img
 
-    def identificandoPontos(self, imagem):
-        #imagem = self.extraindoImagem()
-
-        params = cv2.SimpleBlobDetector_Params()
-        params.filterByColor = True
-        params.blobColor = 0
-        params.filterByArea = True
-        params.minRepeatability = 12
-        # params.minArea = 300
-        params.maxArea = 350
-
-        img_cinza = cv2.cvtColor(np.array(imagem), cv2.COLOR_BGR2GRAY)
-
-        detector = cv2.SimpleBlobDetector_create(params)
-        keypoints = detector.detect(img_cinza)
-
-        imagem_com_keypoints = cv2.drawKeypoints(img_cinza, keypoints, None)
-
-        # cv2.imshow("Imagem com Keypoints", imagem_com_keypoints)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
-        return keypoints, img_cinza
-        #self.construcaoFormularioRetangular(keypoints, img_cinza)
-
-    def construcaoFormularioRetangular(self, keypoints, image):
-        indice = 2
-        keypoint = keypoints[indice]
-        x = int(keypoint.pt[0])
-        y = int(keypoint.pt[1])
-
-        # Tamanho dos retângulos
-        retangulo_width = int(self.janela['larguraMarcador'].get())
-        retangulo_height = int(self.janela['alturaMarcador'].get())
-
-        distancia_horizontal = int(self.janela['espacamentoResposta'].get())
-        distancia_vertical = int(self.janela['espacamentoPerguntas'].get())
-
-        # Posição inicial a partir da qual começar a desenhar
-        start_x = int(x + float(self.janela['margemLateral'].get()))
-        start_y = int(y + float(self.janela['margemSuperior'].get()))
-
-        # Cor dos retângulos (em BGR)
-        color = (0, 255, 0)  # Verde
-
-        thickness = 1
-        linhas_limite = int(self.janela['numeroPerguntas'].get())
-        linha_atual = 1
-        retangulos_desenhados = 0
-        retangulos_por_linha = int(self.janela['numeroOpcoes'].get())
-
-        # Desenhe os retângulos na imagem com a posição inicial
-        x = start_x
-        y = start_y
-        for _ in range(linhas_limite):
-            for _ in range(retangulos_por_linha):
-                x1, y1 = x, y
-                x2, y2 = x + retangulo_width, y + retangulo_height
-                cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness)
-                x += retangulo_width + distancia_horizontal
-
-            # Mover para a próxima linha
-            x = start_x
-            y += retangulo_height + distancia_vertical
-
-        # cv2.imshow('Retângulos', image)
-        #
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
-        return image
+    def atualizar_label(self, texto):
+        self.janela['arquivo'].update(texto)
 
     def previewConfiguracoes(self, image):
         cv2.imshow('Retângulos', image)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-    def Iniciar(self):
-        self.eventListner()
 
     def abrirTelaImportacaoCartaoResposta(self):
         pass
@@ -165,8 +122,8 @@ class TelaLeitorCartao:
         espacamentoPerguntas = int(self.janela['espacamentoPerguntas'].get())
         espacamentoResposta = int(self.janela['espacamentoResposta'].get())
         qtdAlunos = int(self.janela['qtdAlunos'].get())
-        imagem = self.extraindoImagem()
-        keypoints, img_cinza = self.identificandoPontos(imagem)
+        imagem = self.getImage()
+        keypoints, img_cinza = self.controlador.identificandoPontos(imagem)
         return {
             'numeroPerguntas': numeroPerguntas,
             'numeroOpcoes': numeroOpcoes,
@@ -182,10 +139,27 @@ class TelaLeitorCartao:
             'img_cinza': img_cinza
         }
 
-
-    def definiConfiguracaoLeitura(self):
+    def ActiondefiniConfiguracaoLeitura(self):
         dados_tela = self.getDadosTela()
         self.controlador.definirConfiguracao(dados_tela)
+
+    def ActiongeraTxt(self):
+        dados_tela = self.getDadosTela()
+        dados_para_salvar = {chave: valor for chave, valor in dados_tela.items() if chave not in ["imagem", "keypoints", "img_cinza"]}
+        caminho_arquivo = sg.popup_get_file('Salve o arquivo como:', save_as=True, file_types=(("Arquivos de Texto", "*.txt"),))
+        if caminho_arquivo:
+            self.controlador.salvandoDadosTela(dados_para_salvar, caminho_arquivo)
+
+    def actionPreview(self):
+        self.controlador.actionPreview()
+
+    def popupInformativo(self):
+        sg.popup('Esta é uma mensagem de informação.', title='Popup de Informação')
+
+    def actionBuscarArquivo(self):
+        arquivo_selecionado = sg.popup_get_file("Selecione um arquivo")
+        if arquivo_selecionado:
+            self.controlador.abrir_explorador_de_arquivos(arquivo_selecionado)
 
     def eventListner(self):
         while True:
@@ -193,13 +167,13 @@ class TelaLeitorCartao:
             if evento == sg.WINDOW_CLOSED:
                 break
             elif evento == 'buscar':
-                arquivo_selecionado = sg.popup_get_file("Selecione um arquivo")
-                if arquivo_selecionado:
-                    self.controlador.abrir_explorador_de_arquivos(arquivo_selecionado)
+                self.actionBuscarArquivo()
             elif evento == 'Preview':
-                self.controlador.actionPreview()
+                self.actionPreview()
             elif evento == 'Importar cartao resposta':
                 self.controlador.actionImportacao()
             elif evento == 'Definir Configuracao':
-                self.definiConfiguracaoLeitura()
+                self.ActiondefiniConfiguracaoLeitura()
+            elif evento == 'Salvar Configuracao':
+                self.ActiongeraTxt()
 

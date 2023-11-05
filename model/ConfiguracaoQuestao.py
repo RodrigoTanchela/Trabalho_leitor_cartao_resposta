@@ -6,6 +6,8 @@ class ConfiguracaoQuestao(Configuracoes):
         self._margemSuperior = margemSuperior
         self._margemLateral = margemLateral
         self._qtdAlunos = qtdAlunos
+        self._posicaoHorizontal = posicaoHorizontal
+        self._posicaoVertical = posicaoVertical
 
         # Getter para o atributo 'espacamento'
         def get_margemSuperior(self):
@@ -30,3 +32,15 @@ class ConfiguracaoQuestao(Configuracoes):
 
         def set_qtdAlunos(self, qtdAlunos):
             self._qtdAlunos = qtdAlunos
+
+        def get_posicaoVertical(self):
+            return self._posicaoVertical
+
+        def set_posicaoVertical(self, posicaoVertical):
+            self._posicaoVertical = posicaoVertical
+
+        def get_posicaoHorizontal(self):
+            return self._posicaoHorizontal
+
+        def set_posicaoHorizontal(self, _posicaoHorizontal):
+            self._posicaoHorizontal = posicaoHorizontal

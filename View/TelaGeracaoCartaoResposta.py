@@ -23,21 +23,26 @@ class TelaGeracaoCartaoResposta:
         self.janela = sg.Window("Leitura Cartao Resposta").layout(layout)
         self.button, self.values = self.janela.Read()
 
-    def extraindoImagem(self):
+    def getImage(self):
         pdf_document = fitz.open(self.janela['arquivo'].get())
-        page = pdf_document[0]
-
-        pix = page.get_pixmap(matrix=fitz.Matrix(100 / 100, 100 / 100))
-
-        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-
-        img_byte_array = BytesIO()
-        img.save(img_byte_array, format="PNG")
-        img_cinza = cv2.cvtColor(np.array(img), cv2.COLOR_BGR2GRAY)
-        return img, img_cinza
+        img_cinzas = []
+        imagens = []
+        for i in range(3):
+            page = pdf_document[i]
+            pix = page.get_pixmap(matrix=fitz.Matrix(100 / 100, 100 / 100))
+            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+            img_byte_array = BytesIO()
+            img.save(img_byte_array, format="PNG")
+            img_cinza = cv2.cvtColor(np.array(img), cv2.COLOR_BGR2GRAY)
+            img_cinzas.append(img_cinza)
+            imagens.append(img)
+        return img_cinzas, imagens
 
     def atualizar_label(self, texto):
         self.janela['arquivo'].update(texto)
+
+    def popupInformativo(self, msg):
+        sg.popup(msg, title='Popup de Informação')
 
     def setVisible(self):
         while True:
@@ -49,7 +54,8 @@ class TelaGeracaoCartaoResposta:
                 if arquivo_selecionado:
                     self.controlador.importar_cartao_resposta(arquivo_selecionado)
             if evento == 'Geracao Planilha':
-                self.controlador.leituraRespostas(self.extraindoImagem())
+                img_cinza, img = self.getImage()
+                self.controlador.leituraRespostas(img_cinza)
         self.window.close()
 
 
