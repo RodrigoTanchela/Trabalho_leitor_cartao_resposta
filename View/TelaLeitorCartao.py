@@ -140,21 +140,36 @@ class TelaLeitorCartao:
         }
 
     def ActiondefiniConfiguracaoLeitura(self):
-        dados_tela = self.getDadosTela()
-        self.controlador.definirConfiguracao(dados_tela)
+        try:
+            dados_tela = self.getDadosTela()
+            self.controlador.definirConfiguracao(dados_tela)
+        except Exception as e:
+            self.popupErro('Erro ao executar a ação de definir configuração verifique os campos e tente novamente')
+
 
     def ActiongeraTxt(self):
-        dados_tela = self.getDadosTela()
-        dados_para_salvar = {chave: valor for chave, valor in dados_tela.items() if chave not in ["imagem", "keypoints", "img_cinza"]}
-        caminho_arquivo = sg.popup_get_file('Salve o arquivo como:', save_as=True, file_types=(("Arquivos de Texto", "*.txt"),))
-        if caminho_arquivo:
-            self.controlador.salvandoDadosTela(dados_para_salvar, caminho_arquivo)
+        try:
+            dados_tela = self.getDadosTela()
+            dados_para_salvar = {chave: valor for chave, valor in dados_tela.items() if chave not in ["imagem", "keypoints", "img_cinza"]}
+            caminho_arquivo = sg.popup_get_file('Salve o arquivo como:', save_as=True, file_types=(("Arquivos de Texto", "*.txt"),))
+            if caminho_arquivo:
+                self.controlador.salvandoDadosTela(dados_para_salvar, caminho_arquivo)
+                self.popupInformativo(f'Dados salvos em {caminho_arquivo}')
+        except Exception as e:
+            self.popupErro('Erro ao executar a ação geracao txt verifique os campos e tente novamente')
+
 
     def actionPreview(self):
-        self.controlador.actionPreview()
+        try:
+            self.controlador.actionPreview()
+        except Exception as e:
+            self.popupErro('Erro ao executar a ação preview verifique os campos e tente novamente')
 
-    def popupInformativo(self):
-        sg.popup('Esta é uma mensagem de informação.', title='Popup de Informação')
+    def popupInformativo(self, msg):
+        sg.popup(msg, title='Popup de Informação')
+
+    def popupErro(self, msg):
+        sg.popup_error(msg, title='Erro')
 
     def actionBuscarArquivo(self):
         arquivo_selecionado = sg.popup_get_file("Selecione um arquivo")

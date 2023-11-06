@@ -50,8 +50,8 @@ class ControladorLeitorCartao:
         posicaoHorizontal = int(keypoint.pt[0])
         posicaoVertical = int(keypoint.pt[1])
 
-        self.configuracaoQuestao = ConfiguracaoQuestao(numeroPerguntas, espacamentoPerguntas, margemSuperior, margemLateral, qtdAlunos, posicaoHorizontal, posicaoVertical)
-        self.configuracaoOpcoes = ConfiguracoesOpcoes(numeroOpcoes, espacamentoResposta, larguraMarcador, alturaMarcador)
+        self.configuracaoQuestao = ConfiguracaoQuestao(espacamentoPerguntas, numeroPerguntas, margemSuperior, margemLateral, qtdAlunos, posicaoHorizontal, posicaoVertical)
+        self.configuracaoOpcoes = ConfiguracoesOpcoes(espacamentoResposta, numeroOpcoes, larguraMarcador, alturaMarcador)
 
 
     def actionImportacao(self):
@@ -64,7 +64,7 @@ class ControladorLeitorCartao:
         altura = int(self.keypoints[0].pt[1]) - int(self.keypoints[2].pt[1])
         return largura, altura
 
-    def leituraRespostas(self, image):
+    def leituraRespostas(self, image, caminho_arquivo):
         workbook = Workbook()
         sheet = workbook.active
         sheet.cell(row=1, column=1, value = 'Alunos')
@@ -77,15 +77,12 @@ class ControladorLeitorCartao:
                 respostas = str(respostas_alunos[questao-1]).strip('[]')
                 sheet.cell(row=aluno+2, column=questao+1, value=respostas)
 
-        workbook.save('exemplo17.xlsx')
+        workbook.save(caminho_arquivo)
+        self.visaoLeitorCartaoResposta.popupInformativo(f'Dados salvos em {caminho_arquivo}')
 
     def salvandoDadosTela(self, dados, nome_arquivo):
-        try:
-            with open(nome_arquivo, 'w') as arquivo:
-                json.dump(dados, arquivo, indent=4)
-            print(f'Dados salvos em {nome_arquivo}')
-        except Exception as e:
-            print(f"Ocorreu um erro ao salvar os dados: {str(e)}")
+        with open(nome_arquivo, 'w') as arquivo:
+            json.dump(dados, arquivo, indent=4)
 
     def identificar_respostas(self, image):
         respostas = []
@@ -94,17 +91,17 @@ class ControladorLeitorCartao:
         x = int(keypoint.pt[0])
         y = int(keypoint.pt[1])
 
-        retangulo_width = self.visaoLeitorCartaoResposta.getLarguraMarcador()
-        retangulo_height = self.visaoLeitorCartaoResposta.getAlturaMarcador()
+        retangulo_width = self.configuracaoOpcoes.get_largura()
+        retangulo_height = self.configuracaoOpcoes.get_altura()
 
-        distancia_horizontal = self.visaoLeitorCartaoResposta.getEspacamentoResposta()
-        distancia_vertical = self.visaoLeitorCartaoResposta.getEspacamentoPergunta()
+        distancia_horizontal = self.configuracaoOpcoes.get_espacamento()
+        distancia_vertical = self.configuracaoQuestao.get_espacamento()
 
-        start_x = int(x + self.visaoLeitorCartaoResposta.getMargemLateral())
-        start_y = int(y + self.visaoLeitorCartaoResposta.getMargemSuperior())
+        start_x = int(x + self.configuracaoQuestao.get_margemLateral())
+        start_y = int(y + self.configuracaoQuestao.get_margemSuperior())
 
-        linhas_limite = self.visaoLeitorCartaoResposta.getNumeroPerguntas()
-        retangulos_por_linha = self.visaoLeitorCartaoResposta.getNumeroOpcoes()
+        linhas_limite = self.configuracaoQuestao.get_numero()
+        retangulos_por_linha = self.configuracaoOpcoes.get_numero()
 
         for i in range(linhas_limite):
             for j in range(retangulos_por_linha):
@@ -119,6 +116,8 @@ class ControladorLeitorCartao:
                     numero_retangulo = j+1
                     if(j < retangulos_por_linha):
                         respostas_Questao.append(numero_retangulo)
+                # elif sum(media_canais) < 200 and sum(media_canais) > 180:
+                #         self.telaGeracaoCartaoResposta.popupInformativo('Verificando')
 
                 # Desenhe o retângulo na imagem (para visualização)
                 cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 1)
@@ -128,7 +127,7 @@ class ControladorLeitorCartao:
 
             respostas.append(respostas_Questao)
             respostas_Questao = []
-            start_x = int(x + self.visaoLeitorCartaoResposta.getMargemLateral())
+            start_x = int(x + self.configuracaoQuestao.get_margemLateral())
             start_y += retangulo_height + distancia_vertical
 
             # Exiba a imagem com os retângulos desenhados

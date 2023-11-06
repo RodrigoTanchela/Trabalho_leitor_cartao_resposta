@@ -7,17 +7,17 @@ class ConfiguracoesOpcoes(Configuracoes):
         self._altura  = altura
 
         # Getter para o atributo 'espacamento'
-        def get_largura(self):
-            return self._largura
+    def get_largura(self):
+        return self._largura
 
         # Setter para o atributo 'largura'
-        def set_largura(self, largura):
-            self._largura = largura
+    def set_largura(self, largura):
+        self._largura = largura
 
         # Getter para o atributo 'espacamento'
-        def get_altura(self):
-            return self._altura
+    def get_altura(self):
+        return self._altura
 
         # Setter para o atributo 'largura'
-        def set_altura(self, altura):
-            self._altura = altura
+    def set_altura(self, altura):
+        self._altura = altura
