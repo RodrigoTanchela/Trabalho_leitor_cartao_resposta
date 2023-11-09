@@ -30,17 +30,17 @@ class ConfiguracaoQuestao(Configuracoes):
     def get_qtdAlunos(self):
         return self._qtdAlunos
 
-        def set_qtdAlunos(self, qtdAlunos):
-            self._qtdAlunos = qtdAlunos
+    def set_qtdAlunos(self, qtdAlunos):
+        self._qtdAlunos = qtdAlunos
 
-        def get_posicaoVertical(self):
-            return self._posicaoVertical
+    def get_posicaoVertical(self):
+        return self._posicaoVertical
 
-        def set_posicaoVertical(self, posicaoVertical):
-            self._posicaoVertical = posicaoVertical
+    def set_posicaoVertical(self, posicaoVertical):
+        self._posicaoVertical = posicaoVertical
 
-        def get_posicaoHorizontal(self):
-            return self._posicaoHorizontal
+    def get_posicaoHorizontal(self):
+        return self._posicaoHorizontal
 
-        def set_posicaoHorizontal(self, _posicaoHorizontal):
-            self._posicaoHorizontal = posicaoHorizontal
+    def set_posicaoHorizontal(self, posicaoHorizontal):
+        self._posicaoHorizontal = posicaoHorizontal

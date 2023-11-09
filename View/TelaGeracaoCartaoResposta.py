@@ -35,6 +35,7 @@ class TelaGeracaoCartaoResposta:
             img.save(img_byte_array, format="PNG")
             img_cinza = cv2.cvtColor(np.array(img), cv2.COLOR_BGR2GRAY)
             img_cinzas.append(img_cinza)
+            img = np.array(img)
             imagens.append(img)
         return img_cinzas, imagens
 
@@ -44,35 +45,28 @@ class TelaGeracaoCartaoResposta:
     def popupInformativo(self, msg):
         sg.popup(msg, title='Popup de Informação')
 
-    # def popupSelecao(self):
-    #     opcoes = ['A', 'B', 'C', 'D']
-    #
-    #     # Exibe um popup de escolha de opção
-    #     escolha = sg.popup_get_choice('Escolha uma opção:', title='Opções', values=opcoes)
-    #
-    #     # Verifica a escolha do usuário
-    #     if escolha:
-    #         print(f'O usuário escolheu: {escolha}')
-    #     else:
-    #         print('Nenhuma opção selecionada.')
-
-    def actionGeracaoPlanilha(self, img):
+    def actionGeracaoPlanilha(self, img, img_cinza):
         caminho_arquivo = sg.popup_get_file('Salve o arquivo como:', save_as=True, file_types=(("Arquivos Excel", "*.xlsx"),))
-        self.controlador.leituraRespostas(img, caminho_arquivo)
+        self.controlador.leituraRespostas(img, img_cinza, caminho_arquivo)
+
+    def testeApagar(self, image):
+        cv2.imshow('Retângulos', image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
     def setVisible(self):
         while True:
             evento, values = self.janela.Read()
             if evento == sg.WIN_CLOSED:
-                pass
+                self.janela.close()
             elif evento == 'buscar':
                 arquivo_selecionado = sg.popup_get_file("Selecione um arquivo")
                 if arquivo_selecionado:
                     self.controlador.importar_cartao_resposta(arquivo_selecionado)
             if evento == 'Geracao Planilha':
                 img_cinza, img = self.getImage()
-                self.actionGeracaoPlanilha(img_cinza)
-        self.window.close()
+                self.actionGeracaoPlanilha(img, img_cinza)
+        self.janela.close()
 
 
 

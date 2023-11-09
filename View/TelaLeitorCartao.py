@@ -3,7 +3,7 @@ import cv2
 import fitz
 from io import BytesIO
 from PIL import Image
-import numpy as np
+import json
 
 
 class TelaLeitorCartao:
@@ -12,7 +12,7 @@ class TelaLeitorCartao:
         self.telaGeracaoCartaoResposta = None
 
         layoutBuscarArquivo = [
-            [sg.Text('Caminho', size=(7, 0)), sg.Input(size=(51, 8), key='arquivo'), sg.Button('Buscar', key='buscar')]
+            [sg.Text('Arquivo'), sg.Input(size=(51, 1), key='arquivo'), sg.Button('Buscar', key='buscar')],
         ]
 
         layoutNumeroPerguntas = [
@@ -40,17 +40,17 @@ class TelaLeitorCartao:
         ]
 
         layoutBotoes = [
-            [sg.Button('Preview'), sg.Button('Definir Configuracao'), sg.Button('Salvar Configuracao'), sg.Button('Importar cartao resposta')]
+            [sg.Button('Preview'), sg.Button('Definir Configuracao'), sg.Button('Salvar Configuracao'), sg.Button('Importar cartao resposta'), sg.Button('Carregar Dados')]
         ]
 
         layout = [
-            [sg.Frame('', layoutBuscarArquivo, border_width=2, size=(500, 50))],
-            [sg.Frame('Número', layoutNumeroPerguntas, border_width=2, size=(500, 50))],
-            [sg.Frame('Medidas do campo', layoutEspacamentoMarcador, border_width=2, size=(500, 50))],
-            [sg.Frame('Espaçamento', layoutEspacamentoPerguntas, border_width=2, size=(500, 50))],
-            [sg.Frame('Margem', loyuotMarginPagina, border_width=2, size=(500, 50))],
-            [sg.Frame('Alunos', layoutAlunos, border_width=2, size=(500, 50))],
-            [sg.Frame('', layoutBotoes, border_width=2, size=(500, 50))],
+            [sg.Frame('Importar', layoutBuscarArquivo, border_width=2, size=(600, 50))],
+            [sg.Frame('Número', layoutNumeroPerguntas, border_width=2, size=(600, 50))],
+            [sg.Frame('Medidas do campo', layoutEspacamentoMarcador, border_width=2, size=(600, 50))],
+            [sg.Frame('Espaçamento', layoutEspacamentoPerguntas, border_width=2, size=(600, 50))],
+            [sg.Frame('Margem', loyuotMarginPagina, border_width=2, size=(600, 50))],
+            [sg.Frame('Alunos', layoutAlunos, border_width=2, size=(600, 50))],
+            [sg.Frame('', layoutBotoes, border_width=2, size=(600, 50))],
             # [sg.Output(size=(30,20))]
         ]
 
@@ -112,11 +112,34 @@ class TelaLeitorCartao:
     def abrirTelaImportacaoCartaoResposta(self):
         pass
 
+    def trataDadosTela(self):
+        dados = self.getDadosTela()
+        numeroPerguntas = int(dados['numeroPerguntas'])
+        numeroOpcoes = int(dados['numeroOpcoes'])
+        margemLateral = int(dados['margemLateral'])
+        margemSuperior = int(dados['margemSuperior'])
+        larguraMarcador = int(dados['larguraMarcador'])
+        alturaMarcador = int(dados['alturaMarcador'])
+        espacamentoPerguntas = int(dados['espacamentoPerguntas'])
+        espacamentoResposta = int(dados['espacamentoResposta'])
+        qtdAlunos = int(dados['qtdAlunos'])
+        return {
+            'numeroPerguntas': numeroPerguntas,
+            'numeroOpcoes': numeroOpcoes,
+            'margemLateral': margemLateral,
+            'margemSuperior': margemSuperior,
+            'larguraMarcador': larguraMarcador,
+            'alturaMarcador': alturaMarcador,
+            'espacamentoPerguntas': espacamentoPerguntas,
+            'espacamentoResposta': espacamentoResposta,
+            'qtdAlunos': qtdAlunos,
+        }
+
     def getDadosTela(self):
         numeroPerguntas = int(self.janela['numeroPerguntas'].get())
         numeroOpcoes = int(self.janela['numeroOpcoes'].get())
-        margemLateral = float(self.janela['margemLateral'].get())
-        margemSuperior = float(self.janela['margemSuperior'].get())
+        margemLateral = int(self.janela['margemLateral'].get())
+        margemSuperior = int(self.janela['margemSuperior'].get())
         larguraMarcador = int(self.janela['larguraMarcador'].get())
         alturaMarcador = int(self.janela['alturaMarcador'].get())
         espacamentoPerguntas = int(self.janela['espacamentoPerguntas'].get())
@@ -147,7 +170,7 @@ class TelaLeitorCartao:
             self.popupErro('Erro ao executar a ação de definir configuração verifique os campos e tente novamente')
 
 
-    def ActiongeraTxt(self):
+    def ActionGeraTxt(self):
         try:
             dados_tela = self.getDadosTela()
             dados_para_salvar = {chave: valor for chave, valor in dados_tela.items() if chave not in ["imagem", "keypoints", "img_cinza"]}
@@ -176,12 +199,28 @@ class TelaLeitorCartao:
         if arquivo_selecionado:
             self.controlador.abrir_explorador_de_arquivos(arquivo_selecionado)
 
+    def carregar_dados(self):
+        # Solicite ao usuário que selecione o arquivo JSON
+        caminho_arquivo = sg.popup_get_file('Selecione o arquivo JSON', file_types=(("Arquivos TXT", "*.txt"),))
+
+        if caminho_arquivo:
+            try:
+                with open(caminho_arquivo, 'r') as arquivo_json:
+                    dados = json.load(arquivo_json)
+                    for chave, valor in dados.items():
+                        if chave in self.janela.AllKeysDict:
+                            self.janela[chave].update(valor)
+            except Exception as e:
+                sg.popup_error(f"Erro ao carregar os dados do txt: {str(e)}")
+
     def eventListner(self):
         while True:
             evento, valores = self.janela.Read()
             if evento == sg.WINDOW_CLOSED:
                 break
             elif evento == 'buscar':
+                self.actionBuscarArquivo()
+            elif evento == 'buscartxt':
                 self.actionBuscarArquivo()
             elif evento == 'Preview':
                 self.actionPreview()
@@ -190,5 +229,7 @@ class TelaLeitorCartao:
             elif evento == 'Definir Configuracao':
                 self.ActiondefiniConfiguracaoLeitura()
             elif evento == 'Salvar Configuracao':
-                self.ActiongeraTxt()
+                self.ActionGeraTxt()
+            elif evento == 'Carregar Dados':
+                self.carregar_dados()
 
