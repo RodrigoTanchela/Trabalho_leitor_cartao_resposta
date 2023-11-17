@@ -27,17 +27,30 @@ class TelaGeracaoCartaoResposta:
         pdf_document = fitz.open(self.janela['arquivo'].get())
         img_cinzas = []
         imagens = []
-        for i in range(3):
+        for i in range(pdf_document.page_count):
             page = pdf_document[i]
             pix = page.get_pixmap(matrix=fitz.Matrix(100 / 100, 100 / 100))
             img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-            img_byte_array = BytesIO()
-            img.save(img_byte_array, format="PNG")
+            img = self.ajustar_saturacao(np.array(img), 100)
+            # img_byte_array = BytesIO()
+            # img.save(img_byte_array, format="PNG")
             img_cinza = cv2.cvtColor(np.array(img), cv2.COLOR_BGR2GRAY)
             img_cinzas.append(img_cinza)
             img = np.array(img)
             imagens.append(img)
         return img_cinzas, imagens
+
+    def ajustar_saturacao(self, imagem, fator_saturacao):
+        # Converter a imagem de RGB para HLS
+        imagem_hls = cv2.cvtColor(imagem, cv2.COLOR_BGR2HLS)
+
+        # Ajustar a saturação
+        imagem_hls[:, :, 2] = np.clip(imagem_hls[:, :, 2] * fator_saturacao, 0, 255)
+
+        # Converter a imagem de volta para RGB
+        imagem_rgb = cv2.cvtColor(imagem_hls, cv2.COLOR_HLS2BGR)
+
+        return imagem_rgb
 
     def atualizar_label(self, texto):
         self.janela['arquivo'].update(texto)
@@ -54,11 +67,17 @@ class TelaGeracaoCartaoResposta:
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-    def setVisible(self):
+    def popupTeste(self, texto):
+        return sg.popup_get_text(texto)
+
+    def iniciar(self):
+        self.eventListner()
+
+    def eventListner(self):
         while True:
             evento, values = self.janela.Read()
             if evento == sg.WIN_CLOSED:
-                self.janela.close()
+                break
             elif evento == 'buscar':
                 arquivo_selecionado = sg.popup_get_file("Selecione um arquivo")
                 if arquivo_selecionado:

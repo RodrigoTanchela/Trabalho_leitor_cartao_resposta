@@ -1,11 +1,10 @@
 from ProjetoPin3.model.Configuracoes import Configuracoes
 
 class ConfiguracaoQuestao(Configuracoes):
-    def __init__(self, espacamento, numero, margemSuperior, margemLateral, qtdAlunos, posicaoHorizontal, posicaoVertical):
+    def __init__(self, espacamento, numero, margemSuperior, margemLateral, posicaoHorizontal, posicaoVertical):
         super().__init__(espacamento, numero)
         self._margemSuperior = margemSuperior
         self._margemLateral = margemLateral
-        self._qtdAlunos = qtdAlunos
         self._posicaoHorizontal = posicaoHorizontal
         self._posicaoVertical = posicaoVertical
 

@@ -35,9 +35,13 @@ class TelaLeitorCartao:
              sg.Text('Lateral:', size=(7, 0), ), sg.Input(size=(7, 0), key='margemLateral')]
         ]
 
-        layoutAlunos = [
-            [sg.Text('Quantidade:', size=(10)), sg.Input(size=(7, 0), pad=((0, 200), (0, 0)), key='qtdAlunos')]
+        layoutCampoTeste = [
+            [sg.Text('Teste:', size=(7)), sg.Input(size=(7, 0), pad=((0, 200), (0, 0)), key='teste')]
         ]
+
+        # layoutAlunos = [
+        #     [sg.Text('Quantidade:', size=(10)), sg.Input(size=(7, 0), pad=((0, 200), (0, 0)), key='qtdAlunos')]
+        # ]
 
         layoutBotoes = [
             [sg.Button('Preview'), sg.Button('Definir Configuracao'), sg.Button('Salvar Configuracao'), sg.Button('Importar cartao resposta'), sg.Button('Carregar Dados')]
@@ -49,8 +53,10 @@ class TelaLeitorCartao:
             [sg.Frame('Medidas do campo', layoutEspacamentoMarcador, border_width=2, size=(600, 50))],
             [sg.Frame('Espaçamento', layoutEspacamentoPerguntas, border_width=2, size=(600, 50))],
             [sg.Frame('Margem', loyuotMarginPagina, border_width=2, size=(600, 50))],
-            [sg.Frame('Alunos', layoutAlunos, border_width=2, size=(600, 50))],
+            [sg.Frame('Teste', layoutCampoTeste, border_width=2, size=(600, 50))],
+            # [sg.Frame('Alunos', layoutCampoTeste, border_width=2, size=(600, 50))],
             [sg.Frame('', layoutBotoes, border_width=2, size=(600, 50))],
+
             # [sg.Output(size=(30,20))]
         ]
 
@@ -66,6 +72,9 @@ class TelaLeitorCartao:
 
     def getLarguraMarcador(self):
         return int(self.janela['larguraMarcador'].get())
+
+    def getTeste(self):
+        return int(self.janela['teste'].get())
 
     def getAlturaMarcador(self):
         return int(self.janela['alturaMarcador'].get())
@@ -88,12 +97,12 @@ class TelaLeitorCartao:
     def getNumeroPerguntas(self):
         return int(self.janela['numeroPerguntas'].get())
 
-    def getQuantidadeAlunos(self):
-        return int(self.janela['qtdAlunos'].get())
+    # def getQuantidadeAlunos(self):
+    #     return int(self.janela['qtdAlunos'].get())
 
     def getImage(self):
         pdf_document = fitz.open(self.getCaminho())
-        page = pdf_document[0]
+        page = pdf_document[int(self.getTeste())]
         pix = page.get_pixmap(matrix=fitz.Matrix(100 / 100, 100 / 100))
         img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
         img_byte_array = BytesIO()
@@ -108,7 +117,6 @@ class TelaLeitorCartao:
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-
     def abrirTelaImportacaoCartaoResposta(self):
         pass
 
@@ -122,7 +130,7 @@ class TelaLeitorCartao:
         alturaMarcador = int(dados['alturaMarcador'])
         espacamentoPerguntas = int(dados['espacamentoPerguntas'])
         espacamentoResposta = int(dados['espacamentoResposta'])
-        qtdAlunos = int(dados['qtdAlunos'])
+        # qtdAlunos = int(dados['qtdAlunos'])
         return {
             'numeroPerguntas': numeroPerguntas,
             'numeroOpcoes': numeroOpcoes,
@@ -132,7 +140,7 @@ class TelaLeitorCartao:
             'alturaMarcador': alturaMarcador,
             'espacamentoPerguntas': espacamentoPerguntas,
             'espacamentoResposta': espacamentoResposta,
-            'qtdAlunos': qtdAlunos,
+            # 'qtdAlunos': qtdAlunos,
         }
 
     def getDadosTela(self):
@@ -144,7 +152,7 @@ class TelaLeitorCartao:
         alturaMarcador = int(self.janela['alturaMarcador'].get())
         espacamentoPerguntas = int(self.janela['espacamentoPerguntas'].get())
         espacamentoResposta = int(self.janela['espacamentoResposta'].get())
-        qtdAlunos = int(self.janela['qtdAlunos'].get())
+        # qtdAlunos = int(self.janela['qtdAlunos'].get())
         imagem = self.getImage()
         keypoints, img_cinza = self.controlador.identificandoPontos(imagem)
         return {
@@ -156,13 +164,13 @@ class TelaLeitorCartao:
             'alturaMarcador': alturaMarcador,
             'espacamentoPerguntas': espacamentoPerguntas,
             'espacamentoResposta': espacamentoResposta,
-            'qtdAlunos': qtdAlunos,
+            # 'qtdAlunos': qtdAlunos,
             'imagem': imagem,
             'keypoints': keypoints,
             'img_cinza': img_cinza
         }
 
-    def ActiondefiniConfiguracaoLeitura(self):
+    def actiondefiniConfiguracaoLeitura(self):
         try:
             dados_tela = self.getDadosTela()
             self.controlador.definirConfiguracao(dados_tela)
@@ -227,7 +235,7 @@ class TelaLeitorCartao:
             elif evento == 'Importar cartao resposta':
                 self.controlador.actionImportacao()
             elif evento == 'Definir Configuracao':
-                self.ActiondefiniConfiguracaoLeitura()
+                self.actiondefiniConfiguracaoLeitura()
             elif evento == 'Salvar Configuracao':
                 self.ActionGeraTxt()
             elif evento == 'Carregar Dados':
