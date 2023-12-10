@@ -85,6 +85,7 @@ class ControladorLeitorCartao:
                 for cell in row:
                     if cell.value and isinstance(cell.value, str):
                         cell.value = cell.value.replace("'", '')
+
     def salvandoDadosTela(self, dados, nome_arquivo):
         with open(nome_arquivo, 'w') as arquivo:
             json.dump(dados, arquivo, indent=4)
