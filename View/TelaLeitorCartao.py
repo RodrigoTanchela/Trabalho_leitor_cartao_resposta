@@ -5,7 +5,6 @@ from io import BytesIO
 from PIL import Image
 import json
 
-
 class TelaLeitorCartao:
     def __init__(self, controlador):
         self.controlador = controlador
@@ -35,14 +34,6 @@ class TelaLeitorCartao:
              sg.Text('Lateral:', size=(7, 0), ), sg.Input(size=(7, 0), key='margemLateral')]
         ]
 
-        layoutCampoTeste = [
-            [sg.Text('Teste:', size=(7)), sg.Input(size=(7, 0), pad=((0, 200), (0, 0)), key='teste')]
-        ]
-
-        # layoutAlunos = [
-        #     [sg.Text('Quantidade:', size=(10)), sg.Input(size=(7, 0), pad=((0, 200), (0, 0)), key='qtdAlunos')]
-        # ]
-
         layoutBotoes = [
             [sg.Button('Preview'), sg.Button('Definir Configuracao'), sg.Button('Salvar Configuracao'), sg.Button('Importar cartao resposta'), sg.Button('Carregar Dados')]
         ]
@@ -53,11 +44,8 @@ class TelaLeitorCartao:
             [sg.Frame('Medidas do campo', layoutEspacamentoMarcador, border_width=2, size=(600, 50))],
             [sg.Frame('Espaçamento', layoutEspacamentoPerguntas, border_width=2, size=(600, 50))],
             [sg.Frame('Margem', loyuotMarginPagina, border_width=2, size=(600, 50))],
-            [sg.Frame('Teste', layoutCampoTeste, border_width=2, size=(600, 50))],
-            # [sg.Frame('Alunos', layoutCampoTeste, border_width=2, size=(600, 50))],
             [sg.Frame('', layoutBotoes, border_width=2, size=(600, 50))],
 
-            # [sg.Output(size=(30,20))]
         ]
 
         # Janela
@@ -72,9 +60,6 @@ class TelaLeitorCartao:
 
     def getLarguraMarcador(self):
         return int(self.janela['larguraMarcador'].get())
-
-    def getTeste(self):
-        return int(self.janela['teste'].get())
 
     def getAlturaMarcador(self):
         return int(self.janela['alturaMarcador'].get())
@@ -97,12 +82,9 @@ class TelaLeitorCartao:
     def getNumeroPerguntas(self):
         return int(self.janela['numeroPerguntas'].get())
 
-    # def getQuantidadeAlunos(self):
-    #     return int(self.janela['qtdAlunos'].get())
-
     def getImage(self):
         pdf_document = fitz.open(self.getCaminho())
-        page = pdf_document[int(self.getTeste())]
+        page = pdf_document[0]
         pix = page.get_pixmap(matrix=fitz.Matrix(100 / 100, 100 / 100))
         img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
         img_byte_array = BytesIO()
@@ -117,9 +99,6 @@ class TelaLeitorCartao:
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-    def abrirTelaImportacaoCartaoResposta(self):
-        pass
-
     def trataDadosTela(self):
         dados = self.getDadosTela()
         numeroPerguntas = int(dados['numeroPerguntas'])
@@ -130,7 +109,6 @@ class TelaLeitorCartao:
         alturaMarcador = int(dados['alturaMarcador'])
         espacamentoPerguntas = int(dados['espacamentoPerguntas'])
         espacamentoResposta = int(dados['espacamentoResposta'])
-        # qtdAlunos = int(dados['qtdAlunos'])
         return {
             'numeroPerguntas': numeroPerguntas,
             'numeroOpcoes': numeroOpcoes,
@@ -140,7 +118,6 @@ class TelaLeitorCartao:
             'alturaMarcador': alturaMarcador,
             'espacamentoPerguntas': espacamentoPerguntas,
             'espacamentoResposta': espacamentoResposta,
-            # 'qtdAlunos': qtdAlunos,
         }
 
     def getDadosTela(self):
@@ -152,7 +129,6 @@ class TelaLeitorCartao:
         alturaMarcador = int(self.janela['alturaMarcador'].get())
         espacamentoPerguntas = int(self.janela['espacamentoPerguntas'].get())
         espacamentoResposta = int(self.janela['espacamentoResposta'].get())
-        # qtdAlunos = int(self.janela['qtdAlunos'].get())
         imagem = self.getImage()
         keypoints, img_cinza = self.controlador.identificandoPontos(imagem)
         return {
@@ -164,7 +140,6 @@ class TelaLeitorCartao:
             'alturaMarcador': alturaMarcador,
             'espacamentoPerguntas': espacamentoPerguntas,
             'espacamentoResposta': espacamentoResposta,
-            # 'qtdAlunos': qtdAlunos,
             'imagem': imagem,
             'keypoints': keypoints,
             'img_cinza': img_cinza
@@ -177,8 +152,7 @@ class TelaLeitorCartao:
         except Exception as e:
             self.popupErro('Erro ao executar a ação de definir configuração verifique os campos e tente novamente')
 
-
-    def ActionGeraTxt(self):
+    def actionGeraTxt(self):
         try:
             dados_tela = self.getDadosTela()
             dados_para_salvar = {chave: valor for chave, valor in dados_tela.items() if chave not in ["imagem", "keypoints", "img_cinza"]}
@@ -203,12 +177,14 @@ class TelaLeitorCartao:
         sg.popup_error(msg, title='Erro')
 
     def actionBuscarArquivo(self):
-        arquivo_selecionado = sg.popup_get_file("Selecione um arquivo")
-        if arquivo_selecionado:
-            self.controlador.abrir_explorador_de_arquivos(arquivo_selecionado)
+        try:
+            arquivo_selecionado = sg.popup_get_file("Selecione um arquivo")
+            if arquivo_selecionado:
+                self.controlador.abrir_explorador_de_arquivos(arquivo_selecionado)
+        except Exception as e:
+            sg.popup_error(f"Selecione um arquivo valido")
 
     def carregar_dados(self):
-        # Solicite ao usuário que selecione o arquivo JSON
         caminho_arquivo = sg.popup_get_file('Selecione o arquivo JSON', file_types=(("Arquivos TXT", "*.txt"),))
 
         if caminho_arquivo:
@@ -237,7 +213,7 @@ class TelaLeitorCartao:
             elif evento == 'Definir Configuracao':
                 self.actiondefiniConfiguracaoLeitura()
             elif evento == 'Salvar Configuracao':
-                self.ActionGeraTxt()
+                self.actionGeraTxt()
             elif evento == 'Carregar Dados':
                 self.carregar_dados()
 

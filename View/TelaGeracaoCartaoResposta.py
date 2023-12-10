@@ -32,8 +32,6 @@ class TelaGeracaoCartaoResposta:
             pix = page.get_pixmap(matrix=fitz.Matrix(100 / 100, 100 / 100))
             img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
             img = self.ajustar_saturacao(np.array(img), 100)
-            # img_byte_array = BytesIO()
-            # img.save(img_byte_array, format="PNG")
             img_cinza = cv2.cvtColor(np.array(img), cv2.COLOR_BGR2GRAY)
             img_cinzas.append(img_cinza)
             img = np.array(img)
@@ -59,19 +57,29 @@ class TelaGeracaoCartaoResposta:
         sg.popup(msg, title='Popup de Informação')
 
     def actionGeracaoPlanilha(self, img, img_cinza):
-        caminho_arquivo = sg.popup_get_file('Salve o arquivo como:', save_as=True, file_types=(("Arquivos Excel", "*.xlsx"),))
-        self.controlador.leituraRespostas(img, img_cinza, caminho_arquivo)
+        try:
+            caminho_arquivo = sg.popup_get_file('Salve o arquivo como:', save_as=True, file_types=(("Arquivos Excel", "*.xlsx"),))
+            self.controlador.leituraRespostas(img, img_cinza, caminho_arquivo)
+        except Exception as e:
+            sg.popup_error(f"Erro ao salva o  arquivo")
 
-    def testeApagar(self, image):
-        cv2.imshow('Retângulos', image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
 
-    def popupTeste(self, texto):
+    def popupCaixaTesto(self, texto):
         return sg.popup_get_text(texto)
+
+    def popupErro(self, msg):
+        sg.popup_error(msg, title='Erro')
 
     def iniciar(self):
         self.eventListner()
+
+    def actionBuscarArquivo(self):
+        try:
+            arquivo_selecionado = sg.popup_get_file("Selecione um arquivo")
+            if arquivo_selecionado:
+                self.controlador.importar_cartao_resposta(arquivo_selecionado)
+        except Exception as e:
+            sg.popup_error(f"Selecione um arquivo valido")
 
     def eventListner(self):
         while True:
@@ -79,9 +87,7 @@ class TelaGeracaoCartaoResposta:
             if evento == sg.WIN_CLOSED:
                 break
             elif evento == 'buscar':
-                arquivo_selecionado = sg.popup_get_file("Selecione um arquivo")
-                if arquivo_selecionado:
-                    self.controlador.importar_cartao_resposta(arquivo_selecionado)
+                self.actionBuscarArquivo()
             if evento == 'Geracao Planilha':
                 img_cinza, img = self.getImage()
                 self.actionGeracaoPlanilha(img, img_cinza)
